@@ -55,7 +55,6 @@ class DataRange(object):
         self._protect_id = protect_id
         self._name = name
 
-        self._protected = False
         self.protected_properties = ProtectedRange()
         self._banned = False
 
@@ -94,7 +93,7 @@ class DataRange(object):
     @property
     def protected(self):
         """get/set range protection"""
-        return self._protect_id is None
+        return self._protect_id is not None
 
     @protected.setter
     def protected(self, value):

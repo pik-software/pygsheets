@@ -285,7 +285,7 @@ class Worksheet(object):
                 values = [x.get('values', []) for x in values]
             else:
                 values = [x.get('values', []) for x in values]
-                values = filter(lambda x: any('effectiveValue' in item for item in x), values)  # skip empty rows
+                values = list(filter(lambda x: any('effectiveValue' in item for item in x), values))  # skip empty rows
             empty_value = dict()
 
         if values == [['']] or values == []: values = [[]]
@@ -301,13 +301,13 @@ class Worksheet(object):
                 matrix.extend([[empty_value]*max_cols]*(max_rows - len(matrix)))
         elif include_empty and len(values) > 0 and values != [[]]:
             if returnas != "matrix":
-                matrix = filter(lambda x: any('effectiveValue' in item for item in x), values)  # skip empty rows
+                matrix = list(filter(lambda x: any('effectiveValue' in item for item in x), values))  # skip empty rows
             else:
                 max_cols = end[1] - start[1] + 1 if majdim == "ROWS" else end[0] - start[0] + 1
                 matrix = [list(x + [empty_value] * (max_cols - len(x))) for x in values]
         else:
             if returnas != "matrix":
-                matrix = filter(lambda x: any('effectiveValue' in item for item in x), values)  # skip empty rows
+                matrix = list(filter(lambda x: any('effectiveValue' in item for item in x), values))  # skip empty rows
                 for i, row in enumerate(matrix):
                     for j, cell in reversed(list(enumerate(row))):
                         if 'effectiveValue' not in cell:
@@ -916,6 +916,24 @@ class Worksheet(object):
         }}
         self.client.sh_batch_update(self.spreadsheet.id, request, batch=self.spreadsheet.batch_mode)
         self.spreadsheet._named_ranges = [x for x in self.spreadsheet._named_ranges if x["namedRangeId"] != range_id]
+
+    def create_protected_range(self, gridrange):
+        """create protected range
+          :param gridrange: gridrange of cells to be protected"""
+        request = {"addProtectedRange": {
+            "protectedRange": {
+                "range": gridrange
+            },
+        }}
+        return self.client.sh_batch_update(self.spreadsheet.id, request, None, False)
+
+    def remove_protected_range(self, range_id):
+        """create protected range
+          :param range_id: id of protected range to be deleted"""
+        request = {"deleteProtectedRange": {
+            "protectedRangeId": range_id
+        }}
+        return self.client.sh_batch_update(self.spreadsheet.id, request, None, False)
 
     def set_dataframe(self, df, start, copy_index=False, copy_head=True, fit=False, escape_formulae=False, nan='NaN'):
         """
